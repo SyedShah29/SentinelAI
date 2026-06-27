@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SentinelAI Detector</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 320px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0f0;
+    font-size: 13px;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid #4c1d95;
+  }
+  .header h1 { font-size: 17px; color: #a78bfa; font-weight: 700; }
+  .header p  { font-size: 10px; color: #8b5cf6; margin-top: 2px; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #1e1e2e;
+    background: #0d0d1a;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #6b7280;
+  }
+  .status-dot.ok  { background: #00c853; animation: pulse 2s infinite; }
+  .status-dot.err { background: #ff4b4b; }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50%      { opacity:0.5; }
+  }
+  .status-text { font-size: 11px; color: #9ca3af; }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #2d2d42;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab.active  { color: #a78bfa; border-bottom-color: #7c3aed; }
+  .tab:hover   { color: #c4b5fd; }
+
+  .tab-content { display: none; padding: 14px; }
+  .tab-content.active { display: block; }
+
+  .instruction {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #9ca3af;
+    line-height: 1.5;
+  }
+  .instruction b { color: #a78bfa; }
+
+  label { display: block; font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    background: #1e1e2e;
+    border: 1px solid #2d2d42;
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #e0e0f0;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: #7c3aed; }
+
+  .btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 10px;
+  }
+  .btn:hover  { opacity: 0.9; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: linear-gradient(135deg,#7c3aed,#4c1d95); color:#fff; }
+  .btn-danger  { background: rgba(255,75,75,.15); color:#ff6b6b; border:1px solid rgba(255,75,75,.2); }
+
+  .history-item {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-left: 3px solid;
+    cursor: pointer;
+  }
+  .history-item.ai    { border-color: #ff4b4b; }
+  .history-item.human { border-color: #00c853; }
+  .history-item.mixed { border-color: #ff9800; }
+
+  .hist-verdict { font-size: 11px; font-weight: 700; }
+  .hist-verdict.ai    { color: #ff6b6b; }
+  .hist-verdict.human { color: #69f0ae; }
+  .hist-verdict.mixed { color: #ffb74d; }
+  .hist-text    { font-size: 11px; color: #6b7280; margin-top: 2px; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hist-time    { font-size: 10px; color: #4b5563; margin-top: 3px; }
+
+  .empty-state {
+    text-align: center;
+    color: #4b5563;
+    padding: 24px;
+    font-size: 12px;
+  }
+
+  .save-ok { color: #00c853; font-size: 11px; margin-top: 6px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛡️ SentinelAI</h1>
+  <p>Right-click selected text → Check with SentinelAI</p>
+</div>
+
+<div class="status-bar">
+  <div class="status-dot" id="statusDot"></div>
+  <div class="status-text" id="statusText">Checking API...</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="howto">How to Use</div>
+  <div class="tab" data-tab="history">History</div>
+  <div class="tab" data-tab="settings">Settings</div>
+</div>
+
+<div id="howto" class="tab-content active">
+  <div class="instruction">
+    <b>1.</b> Start the API server:<br/>
+    <code style="color:#7c3aed">python api.py</code><br/><br/>
+    <b>2.</b> Select any text on a webpage<br/><br/>
+    <b>3.</b> Right-click → <b>"🛡️ Check with SentinelAI"</b><br/><br/>
+    <b>4.</b> Results appear as an overlay on the page
+  </div>
+  <div class="instruction">
+    <b>Supported AI models:</b><br/>
+    ChatGPT, GPT-4, Gemini, Claude, Llama, Mistral, DeepSeek
+  </div>
+</div>
+
+<div id="history" class="tab-content">
+  <div id="historyList"></div>
+  <button class="btn btn-danger" id="clearHistory">Clear History</button>
+</div>
+
+<div id="settings" class="tab-content">
+  <label for="apiKeyInput">API Key</label>
+  <input type="password" id="apiKeyInput" placeholder="Enter your API key (or leave blank for dev-key)">
+
+  <label for="apiUrlInput" style="margin-top:10px;">API URL</label>
+  <input type="text" id="apiUrlInput" placeholder="http://localhost:8000">
+
+  <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+  <div class="save-ok" id="saveOk">✓ Settings saved!</div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

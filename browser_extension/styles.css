@@ -1,0 +1,187 @@
+/* styles.css — Injected into every page for the AI detector panel */
+
+#ai-detector-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 360px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #0f0f1a;
+  border: 1px solid #7c3aed;
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 2147483647;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 13px;
+  color: #e0e0f0;
+  animation: ai-d-slide-in 0.25s cubic-bezier(.22,.68,0,1.2);
+}
+
+@keyframes ai-d-slide-in {
+  from { opacity: 0; transform: translateX(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.ai-d-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #2d2d42;
+  position: sticky;
+  top: 0;
+  background: #0f0f1a;
+  z-index: 1;
+}
+
+.ai-d-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #a78bfa;
+}
+
+.ai-d-close {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.ai-d-close:hover { color: #e0e0f0; }
+
+.ai-d-verdict {
+  margin: 14px 16px 6px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+}
+.ai-d-verdict.ai     { background: linear-gradient(135deg,#ff4b4b,#ff6b6b); color:#fff; }
+.ai-d-verdict.human  { background: linear-gradient(135deg,#00c853,#69f0ae); color:#fff; }
+.ai-d-verdict.mixed  { background: linear-gradient(135deg,#ff9800,#ffb74d); color:#fff; }
+.ai-d-verdict.unknown{ background: #374151; color:#9ca3af; }
+
+.ai-d-conf {
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0 16px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-d-domain-pill {
+  background: rgba(124,58,237,0.18);
+  color: #a78bfa;
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+.ai-d-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  padding: 10px 16px 4px;
+}
+
+.ai-d-bar-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 8px;
+}
+.ai-d-bar-label { width: 80px; font-size: 12px; color: #9ca3af; flex-shrink: 0; }
+.ai-d-bar-bg {
+  flex: 1;
+  background: #2d2d42;
+  border-radius: 4px;
+  height: 7px;
+  overflow: hidden;
+}
+.ai-d-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.ai-d-bar-pct { width: 32px; font-size: 11px; color: #d1d5db; text-align: right; }
+
+.ai-d-fingerprint {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #a78bfa;
+}
+.ai-d-fp-prob {
+  background: rgba(124,58,237,0.2);
+  border-radius: 8px;
+  padding: 1px 6px;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.ai-d-sentences {
+  padding: 0 16px;
+  margin-bottom: 4px;
+}
+
+.ai-d-sentence {
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  border-left: 3px solid;
+}
+.ai-d-sentence.ai     { background:rgba(255,75,75,.1);  border-color:#ff4b4b; }
+.ai-d-sentence.human  { background:rgba(0,200,83,.08);  border-color:#00c853; }
+.ai-d-sentence.mixed  { background:rgba(255,152,0,.1);  border-color:#ff9800; }
+
+.ai-d-sent-label { font-size: 10px; font-weight: 700; margin-bottom: 3px; color: #d1d5db; }
+.ai-d-sent-text  { font-size: 12px; color: #9ca3af; line-height: 1.4; }
+
+.ai-d-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 30px 16px;
+  color: #9ca3af;
+}
+
+.ai-d-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #2d2d42;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: ai-d-spin 0.8s linear infinite;
+}
+@keyframes ai-d-spin { to { transform: rotate(360deg); } }
+
+.ai-d-error {
+  padding: 16px;
+  color: #ff6b6b;
+  font-size: 12px;
+  background: rgba(255,75,75,.08);
+  margin: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,75,75,.2);
+}
+
+.ai-d-footer {
+  padding: 10px 16px;
+  font-size: 10px;
+  color: #4b5563;
+  border-top: 1px solid #1e1e2e;
+  text-align: center;
+}

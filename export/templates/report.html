@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Detection Report — {{ timestamp }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0f0;
+    padding: 40px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .header {
+    border-bottom: 2px solid #7c3aed;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+  }
+  .header h1 {
+    font-size: 28px;
+    color: #a78bfa;
+    font-weight: 700;
+  }
+  .header .subtitle {
+    color: #6b7280;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .verdict-box {
+    padding: 18px 24px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .verdict-ai   { background: linear-gradient(135deg,#ff4b4b,#ff6b6b); color:#fff; }
+  .verdict-human{ background: linear-gradient(135deg,#00c853,#69f0ae); color:#fff; }
+  .verdict-mixed{ background: linear-gradient(135deg,#ff9800,#ffb74d); color:#fff; }
+  .verdict-unknown{ background: #374151; color:#9ca3af; }
+
+  .confidence-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .confidence-high     { background:rgba(0,200,83,.15);  color:#00c853; border:1px solid #00c853; }
+  .confidence-moderate { background:rgba(255,152,0,.15); color:#ff9800; border:1px solid #ff9800; }
+  .confidence-low      { background:rgba(255,75,75,.15); color:#ff4b4b; border:1px solid #ff4b4b; }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #a78bfa;
+    border-left: 4px solid #7c3aed;
+    padding-left: 12px;
+    margin: 28px 0 14px;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .metric-card {
+    background: #1e1e2e;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid #2d2d42;
+  }
+  .metric-card .label { color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-card .value { font-size: 22px; font-weight: 700; color: #e0e0f0; margin: 4px 0; }
+  .metric-card .sub   { font-size: 11px; }
+  .sub-ai    { color: #ff4b4b; }
+  .sub-human { color: #00c853; }
+  .sub-mid   { color: #ff9800; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+  th {
+    background: #1e1e2e;
+    color: #a78bfa;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #2d2d42;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #1e1e2e;
+    font-size: 13px;
+  }
+  tr:nth-child(even) td { background: #0d0d1a; }
+
+  .sentence-block {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 4px solid;
+  }
+  .s-ai    { background:rgba(255,75,75,.10); border-color:#ff4b4b; }
+  .s-human { background:rgba(0,200,83,.08);  border-color:#00c853; }
+  .s-mixed { background:rgba(255,152,0,.10); border-color:#ff9800; }
+  .s-label { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+  .s-text  { font-size: 13px; color: #d1d5db; }
+  .s-stats { font-size: 11px; color: #6b7280; margin-top: 4px; }
+
+  .warning-box {
+    background: rgba(255,152,0,.12);
+    border: 1px solid #ff9800;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .fingerprint-bar-wrap { margin-bottom: 6px; }
+  .fingerprint-label { font-size: 12px; color: #d1d5db; display: flex; justify-content: space-between; }
+  .fingerprint-bar-bg { background: #2d2d42; border-radius: 4px; height: 8px; margin-top: 3px; }
+  .fingerprint-bar-fill { background: linear-gradient(90deg,#7c3aed,#a78bfa); border-radius: 4px; height: 8px; }
+
+  .connectives-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .connective-pill {
+    background: rgba(255,75,75,.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,75,75,.3);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 12px;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #2d2d42;
+    color: #4b5563;
+    font-size: 11px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔍 AI Text Detection Report</h1>
+  <div class="subtitle">Generated {{ timestamp }} &nbsp;|&nbsp; {{ char_count }} characters &nbsp;|&nbsp; {{ sentence_count }} sentences</div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict-box verdict-{{ verdict | lower }}">
+  Verdict: {{ verdict_label }}
+</div>
+<div style="text-align:center; margin-bottom: 24px;">
+  <span class="confidence-badge confidence-{{ confidence }}">{{ confidence_category }}</span>
+</div>
+
+<!-- Warnings -->
+{% if warnings %}
+{% for w in warnings %}
+<div class="warning-box">⚠️ {{ w }}</div>
+{% endfor %}
+{% endif %}
+
+<!-- Overall Score + Domain -->
+<div class="section-title">Overall Score</div>
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="label">AI Probability</div>
+    <div class="value">{{ "%.0f"|format(ai_probability * 100) }}%</div>
+    <div class="sub {% if ai_probability > 0.6 %}sub-ai{% elif ai_probability < 0.4 %}sub-human{% else %}sub-mid{% endif %}">
+      {{ verdict }}
+    </div>
+  </div>
+  <div class="metric-card">
+    <div class="label">Perplexity</div>
+    <div class="value">{{ "%.1f"|format(ppl) }}</div>
+    <div class="sub {% if ppl_ai > 0.6 %}sub-ai{% elif ppl_ai < 0.4 %}sub-human{% else %}sub-mid{% endif %}">
+      AI prob: {{ "%.0f"|format(ppl_ai * 100) }}%
+    </div>
+  </div>
+  <div class="metric-card">
+    <div class="label">Burstiness</div>
+    <div class="value">{{ "%.3f"|format(burst) }}</div>
+    <div class="sub {% if burst_ai > 0.6 %}sub-ai{% elif burst_ai < 0.4 %}sub-human{% else %}sub-mid{% endif %}">
+      AI prob: {{ "%.0f"|format(burst_ai * 100) }}%
+    </div>
+  </div>
+  <div class="metric-card">
+    <div class="label">Classifier</div>
+    <div class="value">{{ "%.0f"|format(clf_ai * 100) }}%</div>
+    <div class="sub {% if clf_ai > 0.6 %}sub-ai{% elif clf_ai < 0.4 %}sub-human{% else %}sub-mid{% endif %}">
+      {{ "Fine-tuned" if clf_trained else "Base model" }}
+    </div>
+  </div>
+  {% if stylo_ai is not none %}
+  <div class="metric-card">
+    <div class="label">Stylometry</div>
+    <div class="value">{{ "%.0f"|format(stylo_ai * 100) }}%</div>
+    <div class="sub sub-mid">Writing style</div>
+  </div>
+  {% endif %}
+  <div class="metric-card">
+    <div class="label">Domain</div>
+    <div class="value" style="font-size:16px;">{{ domain | capitalize }}</div>
+    <div class="sub sub-mid">Detected</div>
+  </div>
+</div>
+
+<!-- MC Dropout Uncertainty -->
+{% if uncertainty %}
+<div class="section-title">Uncertainty Estimate (MC Dropout)</div>
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="label">Mean Probability</div>
+    <div class="value">{{ "%.0f"|format(uncertainty.mean_ai_probability * 100) }}%</div>
+  </div>
+  <div class="metric-card">
+    <div class="label">Uncertainty (±σ)</div>
+    <div class="value">{{ "%.2f"|format(uncertainty.std_uncertainty) }}</div>
+    <div class="sub sub-mid">{{ uncertainty.uncertainty_level | capitalize }}</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Fingerprint -->
+{% if fingerprint %}
+<div class="section-title">Source Model Fingerprint</div>
+<p style="color:#6b7280; font-size:12px; margin-bottom:12px;">
+  Top prediction: <b style="color:#a78bfa;">{{ fingerprint.top_label }}</b>
+  ({{ "%.0f"|format(fingerprint.top_probability * 100) }}% confidence)
+</p>
+{% for item in fingerprint.ai_source_ranking[:5] %}
+<div class="fingerprint-bar-wrap">
+  <div class="fingerprint-label">
+    <span>{{ item.model }}</span>
+    <span>{{ "%.1f"|format(item.probability * 100) }}%</span>
+  </div>
+  <div class="fingerprint-bar-bg">
+    <div class="fingerprint-bar-fill" style="width: {{ item.probability * 100 }}%;"></div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Stylometry -->
+{% if stylo_connectives %}
+<div class="section-title">AI Writing Style Indicators</div>
+<p style="color:#6b7280; font-size:12px; margin-bottom:8px;">
+  The following AI-characteristic connective phrases were detected:
+</p>
+<div class="connectives-list">
+  {% for c in stylo_connectives %}
+  <span class="connective-pill">{{ c }}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Sentence Analysis -->
+<div class="section-title">Sentence-Level Analysis</div>
+{% for s in sentences %}
+{% set cls = "s-ai" if s.ai_probability > 0.6 else ("s-human" if s.ai_probability < 0.4 else "s-mixed") %}
+{% set icon = "🔴 AI" if s.ai_probability > 0.6 else ("🟢 Human" if s.ai_probability < 0.4 else "🟡 Uncertain") %}
+<div class="sentence-block {{ cls }}">
+  <div class="s-label">{{ icon }} — {{ "%.0f"|format(s.ai_probability * 100) }}%</div>
+  <div class="s-text">{{ s.text }}</div>
+  <div class="s-stats">PPL: {{ "%.1f"|format(s.perplexity) }} | Classifier: {{ "%.0f"|format(s.classifier_prob * 100) }}%</div>
+</div>
+{% endfor %}
+
+<!-- Metadata -->
+<div class="section-title">Document Metadata</div>
+<table>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td>Characters</td><td>{{ char_count }}</td></tr>
+  <tr><td>Sentences</td><td>{{ sentence_count }}</td></tr>
+  <tr><td>Language</td><td>{{ language | upper }}</td></tr>
+  <tr><td>Domain</td><td>{{ domain | capitalize }}</td></tr>
+  <tr><td>Classifier Status</td><td>{{ "Fine-tuned" if clf_trained else "Base model" }}</td></tr>
+  <tr><td>Stylometry</td><td>{{ "Available" if stylo_ai is not none else "Not available (install spaCy)" }}</td></tr>
+  <tr><td>Fingerprinting</td><td>{{ "Available" if fingerprint else "Not available (train model)" }}</td></tr>
+  <tr><td>Homoglyphs Detected</td><td>{{ "Yes ⚠️" if homoglyphs else "No" }}</td></tr>
+</table>
+
+<div class="footer">
+  AI Text Detector &nbsp;|&nbsp; Report generated {{ timestamp }} &nbsp;|&nbsp;
+  For informational purposes only. Human review is always recommended.
+</div>
+
+</body>
+</html>
